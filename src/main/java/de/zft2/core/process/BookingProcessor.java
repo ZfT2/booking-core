@@ -368,7 +368,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		}
 	}
 
-	public List<Booking> findMissingRebookings(Collection<Booking> bookingListWithoutTransfer) {
+	public List<Booking> findMissingRebookings(Collection<B> bookingListWithoutTransfer) {
 
 		int rebookingsFoundCount = 0;
 		int rebookingsMissingCount = 0;
@@ -405,7 +405,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		return missingReBookings;
 	}
 
-	public List<Booking> findReBookings(Collection<Booking> bookingListWithoutTransfer) {
+	public List<Booking> findReBookings(Collection<B> bookingListWithoutTransfer) {
 		List<Booking> reBookingsList = new ArrayList<>();
 		for (Booking possibleReBooking : bookingListWithoutTransfer) {
 			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(possibleReBooking.getAccountNamePP())
