@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.security.auth.login.AccountException;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +21,7 @@ import de.zft2.core.config.ImportProperties;
 import de.zft2.core.dto.Account;
 import de.zft2.core.dto.Booking;
 import de.zft2.core.dto.Booking.Typ;
+import de.zft2.core.exception.AccountException;
 import de.zft2.core.exception.ConfigurationException;
 
 public abstract class BookingProcessor<B extends Booking, A extends Account<B>> extends AccountProcessor<A> {
@@ -306,7 +305,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		return cancellationBookingsCount;
 	}
 
-	public String getAccountBalance(Account<Booking> account) {
+	public String getAccountBalance(A account) {
 		BigDecimal balanceAccount = BigDecimal.ZERO;
 		for (Booking booking : account.getBookings()) {
 			balanceAccount = balanceAccount.add(booking.getAmount());
@@ -314,7 +313,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		return balanceAccount.toString();
 	}
 
-	public int countAccountBookings(Account<Booking> account, Typ typ) {
+	public int countAccountBookings(A account, Typ typ) {
 		int reBookings = 0;
 		for (Booking booking : account.getBookings()) {
 			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(booking.getAccountNamePP())
@@ -361,8 +360,8 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		return removeCount;
 	}
 	
-	public void removeTransferAccountBookings(Collection<Account<Booking>> accountList) {
-		for (Account<Booking> account : accountList) {
+	public void removeTransferAccountBookings(Collection<A> accountList) {
+		for (A account : accountList) {
 			if (NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(account.getNamePP())) {
 				accountList.remove(account);
 			}
