@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-${{ github.event.repository.default_branch }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Determine version
+        shell: bash
+        run: |
+          RAW_TAG=${GITHUB_REF_NAME#v}
+
+          if [[ "$RAW_TAG" == *"+"* ]]; then
+            BASE_VERSION=${RAW_TAG%%+*}
+            INCREMENT=${RAW_TAG##*+}
+          else
+            BASE_VERSION=$RAW_TAG
+            INCREMENT="none"
+          fi
+
+          if ! [[ "$BASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format: $BASE_VERSION"
+            exit 1
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+
+          case $INCREMENT in
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            major|Major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            none)
+              ;;
+            *)
+              echo "Invalid increment: $INCREMENT"
+              exit 1
+              ;;
+          esac
+
+          VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Computed version: $VERSION"
+
+      - name: Set Maven version
+        run: mvn -B versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
+
+      - name: Build JAR
+        run: mvn -B clean package -DskipTests
+
+      - name: Generate changelog
+        shell: bash
+        run: |
+          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD \
+            --pretty=format:"- %s" > CHANGELOG_GENERATED.md \
+            || echo "Initial release" > CHANGELOG_GENERATED.md
+
+      - name: Create GitHub release
+        run: |
+          gh release create v${VERSION} target/*.jar \
+            --title "v${VERSION}" \
+            --notes-file CHANGELOG_GENERATED.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to GitHub Packages
+        run: mvn -B deploy -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare next development version
+        shell: bash
+        run: |
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="$MAJOR.$MINOR.$NEXT_PATCH-SNAPSHOT"
+
+          echo "Next version: $NEXT_VERSION"
+          mvn -B versions:set -DnewVersion=$NEXT_VERSION -DgenerateBackupPoms=false
+
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add pom.xml
+          git commit -m "chore: next development version $NEXT_VERSION" || echo "No changes"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
