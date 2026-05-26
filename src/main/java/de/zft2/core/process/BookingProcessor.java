@@ -2,13 +2,11 @@ package de.zft2.core.process;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,8 +27,6 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	private static Logger log = LogManager.getLogger(BookingProcessor.class);
 
 	private static final String NAME_ACCOUNT_TRANSFER = "--TRANSFER--";
-
-	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy", Locale.GERMAN);
 
 	private static ImportProperties propsBookingTypes;
 	private static ImportProperties propsCancel;
@@ -213,16 +209,14 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		return (amountBasebooking.multiply(BigDecimal.valueOf(-1L)).compareTo(amountCmpKonto) == 0);
 	}
 	
-	private int compareTransactionDates(String dateBasebooking, String dateCmpKonto, Typ typ, int timeBetween) {
-		LocalDate dateValueBasebooking = LocalDate.parse(dateBasebooking, formatter);
-		LocalDate dateValueCmpbooking = LocalDate.parse(dateCmpKonto, formatter);
+	private int compareTransactionDates(LocalDate dateBasebooking, LocalDate dateCmpKonto, Typ typ, int timeBetween) {
 
-		if (dateValueBasebooking.isEqual(dateValueCmpbooking) && timeBetween > 0) {
+		if (dateBasebooking.isEqual(dateCmpKonto) && timeBetween > 0) {
 			return 0; // direct Rebooking without transfer account
 		} else if (typ == Typ.REBOOKING_IN) {
-			return Math.abs((int) ChronoUnit.DAYS.between(dateValueCmpbooking, dateValueBasebooking));
+			return Math.abs((int) ChronoUnit.DAYS.between(dateCmpKonto, dateBasebooking));
 		} else if (typ == Typ.REBOOKING_OUT) {
-			return Math.abs((int) ChronoUnit.DAYS.between(dateValueCmpbooking, dateValueBasebooking));
+			return Math.abs((int) ChronoUnit.DAYS.between(dateCmpKonto, dateBasebooking));
 		} else {
 			return -1;
 		}
@@ -281,7 +275,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	private int searchAccountforCancelBooking(Account<B> account, Booking bookingCancel, String purposeToSearch, int cancellationBookingsCount) {
 		for (Booking bookingOriginal : account.getBookings()) {
 			if (bookingOriginal.getPurpose().contains(purposeToSearch) 
-					&& isDaysInRange(ChronoUnit.DAYS.between( LocalDate.parse(bookingCancel.getDate(), formatter), LocalDate.parse(bookingOriginal.getDate(), formatter)), 3)
+					&& isDaysInRange(ChronoUnit.DAYS.between(bookingCancel.getDate(), bookingOriginal.getDate()), 3)
 					&& compareCorrespondingAmount(bookingCancel.getAmount(), bookingOriginal.getAmount())) {
 				log.warn("Cancellation-Booking to revert found: (Account: {} ) {} / {} / {} / {} / {} \n,"
 								+ "corresponding booking: {} / {}/ {} / {} / {} ",
@@ -349,7 +343,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		for (Booking bookingCrossAccount : crossAccountBookings) {
 			if (isCorrespondingRebooking(possibleReBooking.getTyp(), bookingCrossAccount.getTyp())
 					&& compareCrossAccount(bookingCrossAccount.getCrossAccountNamePP(), possibleReBooking)
-					&& possibleReBooking.getDate().equalsIgnoreCase(bookingCrossAccount.getDate())
+					&& possibleReBooking.getDate().equals(bookingCrossAccount.getDate())
 					&& compareCorrespondingAmount(possibleReBooking.getAmount(), bookingCrossAccount.getAmount())) {
 				if (crossAccountBookings.remove(bookingCrossAccount)) {
 					removeCount++;

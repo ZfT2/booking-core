@@ -2,7 +2,6 @@ package de.zft2.core.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 public interface Booking {
 
@@ -37,7 +36,7 @@ public interface Booking {
 		}
 	}
 
-	String getDate();
+	LocalDate getDate();
 
 	BigDecimal getAmount();
 
@@ -72,8 +71,7 @@ public interface Booking {
 		if (value1 == 0) {
 			int value2 = b1.getAccountNamePP().compareTo(b2.getAccountNamePP());
 			if (value2 == 0) {
-				return LocalDate.parse(b1.getDate(), DateTimeFormatter.ofPattern("dd.MM.uu"))
-						.compareTo(LocalDate.parse(b2.getDate(), DateTimeFormatter.ofPattern("dd.MM.uu")));
+				return b1.getDate().compareTo(b2.getDate());
 			} else {
 				return value2;
 			}
