@@ -1,5 +1,6 @@
 package de.zft2.core.testsupport;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,8 +12,11 @@ public class TestAccount implements Account<TestBooking> {
 	private String iban;
 	private String bic;
 	private String number;
+	private String blz;
+	private String bankName;
 	private String accountName;
 	private String namePP;
+	private BigDecimal balance;
 	private String parentAccount;
 	private List<TestBooking> bookings = new ArrayList<>();
 
@@ -33,6 +37,16 @@ public class TestAccount implements Account<TestBooking> {
 
 	public TestAccount withNumber(String number) {
 		this.number = number;
+		return this;
+	}
+
+	public TestAccount withBlz(String blz) {
+		this.blz = blz;
+		return this;
+	}
+
+	public TestAccount withBankName(String bankName) {
+		this.bankName = bankName;
 		return this;
 	}
 
@@ -57,8 +71,23 @@ public class TestAccount implements Account<TestBooking> {
 	}
 
 	@Override
+	public String getBlz() {
+		return blz;
+	}
+
+	@Override
+	public String getBankName() {
+		return bankName;
+	}
+
+	@Override
 	public String getAccountName() {
 		return accountName;
+	}
+
+	@Override
+	public void setAccountName(String accountName) {
+		this.accountName = accountName;
 	}
 
 	@Override
@@ -87,6 +116,16 @@ public class TestAccount implements Account<TestBooking> {
 	}
 
 	@Override
+	public void setBlz(String blz) {
+		this.blz = blz;
+	}
+
+	@Override
+	public void setBankName(String bankName) {
+		this.bankName = bankName;
+	}
+
+	@Override
 	public void setNamePP(String namePP) {
 		this.namePP = namePP;
 	}
@@ -103,5 +142,15 @@ public class TestAccount implements Account<TestBooking> {
 
 	public String getParentAccount() {
 		return parentAccount;
+	}
+
+	@Override
+	public BigDecimal getBalance() {
+		return balance;
+	}
+
+	@Override
+	public void setBalance(BigDecimal balance) {
+		this.balance = balance;
 	}
 }

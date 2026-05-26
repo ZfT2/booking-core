@@ -39,38 +39,94 @@ public interface Booking {
 
 	LocalDate getDate();
 
+	LocalDate getDateBooking();
+
+	LocalDate getDateValue();
+
 	BigDecimal getAmount();
 
 	String getAmountStr();
 
 	String getPurpose();
 
+	Booking getCrossBooking();
+
 	Typ getTyp();
 
-	String getAccountNamePP();
+	String getAccountName();
 
 	String getCrossAccountIBAN();
 
 	String getCrossAccountBIC();
 
-	String getCrossAccountNamePP();
+	String getCrossAccountName();
+
+	String getCrossReceiverName();
+
+	String getCrossBankName();
+
+	String getCrossAccountNumber();
+
+	String getCrossBlz();
+
+	String getSepaCustomerRef();
+
+	String getSepaCreditorId();
+
+	String getSepaEndToEnd();
+
+	String getSepaMandate();
+
+	String getSepaPersonId();
+
+	String getSepaPurpose();
+
+	void setDate(LocalDate date);
+
+	void setDateBooking(LocalDate dateBooking);
+
+	void setDateValue(LocalDate dateValue);
 
 	void setAmount(BigDecimal amount);
 
+	void setPurpose(String purpose);
+
 	void setTyp(Typ typ);
+
+	void setAccountName(String accountName);
 
 	void setCrossAccountIBAN(String crossAccountIBAN);
 
 	void setCrossAccountBIC(String crossAccountBIC);
 
-	void setCrossAccountNamePP(String accountNamePP);
+	void setCrossAccountName(String accountName);
 
 	void setCrossBooking(Booking crossBookingToTransfer);
 
+	void setCrossReceiverName(String crossReceiverName);
+
+	void setCrossBankName(String crossBankName);
+
+	void setCrossAccountNumber(String crossAccountNumber);
+
+	void setCrossBlz(String crossBlz);
+
+	void setSepaCustomerRef(String sepaCustomerRef);
+
+	void setSepaCreditorId(String sepaCreditorId);
+
+	void setSepaEndToEnd(String sepaEndToEnd);
+
+	void setSepaMandate(String sepaMandate);
+
+	void setSepaPersonId(String sepaPersonId);
+
+	void setSepaPurpose(String sepaPurpose);
+
 	public static int compareBookingByAccountThenDate(Booking b1, Booking b2) {
-		int value1 = b1.getCrossAccountNamePP().compareTo(b2.getCrossAccountNamePP());
+		int value1 = b1.getCrossAccountName().compareTo(b2.getCrossAccountName());
 		if (value1 == 0) {
-			int value2 = b1.getAccountNamePP().compareTo(b2.getAccountNamePP());
+			int value2 = b1.getAccountName().compareTo(b2.getAccountName());
 			if (value2 == 0) {
 				return b1.getDate().compareTo(b2.getDate());
 			} else {

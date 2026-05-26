@@ -46,9 +46,9 @@ public class AccountProcessor<A extends Account<? extends Booking>> {
 		for (Map.Entry<Object, Object> property : propsTransfer.entrySet()) {
 
 			String[] possibleIdentifiers = ((String) property.getValue()).split(";");
-			String accountNamePP = ((String) property.getKey());
+			String accountAliasName = ((String) property.getKey());
 
-			accountNumbersMap.put(accountNamePP, Arrays.asList(possibleIdentifiers));
+			accountNumbersMap.put(accountAliasName, Arrays.asList(possibleIdentifiers));
 		}
 	}
 
@@ -57,11 +57,11 @@ public class AccountProcessor<A extends Account<? extends Booking>> {
 		for (Map.Entry<Object, Object> property : propsTransfer.entrySet()) {
 
 			String[] possibleIdentifiers = ((String) property.getValue()).split(";");
-			String accountNamePP = ((String) property.getKey());
+			String accountAliasName = ((String) property.getKey());
 
 			for (String identifier : possibleIdentifiers) {
 				if (identifier.equalsIgnoreCase(accountIdentifier)) {
-					return accountNamePP;
+					return accountAliasName;
 				}
 			}
 		}
@@ -103,8 +103,8 @@ public class AccountProcessor<A extends Account<? extends Booking>> {
 
 		for (Map.Entry<Object, Object> property : propsAccount.entrySet()) {
 			String possibleIdentifiers = ((String) property.getValue());
-			String accountNamePP = ((String) property.getKey());
-			propsTransfer.put(accountNamePP, possibleIdentifiers);
+			String accountAliasName = ((String) property.getKey());
+			propsTransfer.put(accountAliasName, possibleIdentifiers);
 		}
 
 		log.info("created/added default transfer properties with size: {}", propsTransfer.size());

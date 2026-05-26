@@ -36,12 +36,12 @@ class BookingProcessorTest {
 	@Test
 	void addBookingTypesClassifiesRebookingsInterestTaxAndUnknownAmounts() {
 		TestBooking rebooking = booking("-50.00", "Transfer to savings")
-				.withAccountNamePP("Checking")
+				.withAccountName("Checking")
 				.withCrossAccountIBAN(SAVINGS_IBAN);
-		TestBooking interest = booking("4.25", "ZINSEN credited").withAccountNamePP("Checking");
-		TestBooking tax = booking("-1.10", "KAPST charged").withAccountNamePP("Checking");
-		TestBooking unknownAmount = booking(null, "missing amount").withAccountNamePP("Checking");
-		TestBooking depositOrRemoval = booking("100.00", "Salary").withAccountNamePP("Checking");
+		TestBooking interest = booking("4.25", "ZINSEN credited").withAccountName("Checking");
+		TestBooking tax = booking("-1.10", "KAPST charged").withAccountName("Checking");
+		TestBooking unknownAmount = booking(null, "missing amount").withAccountName("Checking");
+		TestBooking depositOrRemoval = booking("100.00", "Salary").withAccountName("Checking");
 		TestAccount account = new TestAccount("Checking", "Checking")
 				.withIban(CHECKING_IBAN)
 				.withBookings(rebooking, interest, tax, unknownAmount, depositOrRemoval);
@@ -49,7 +49,7 @@ class BookingProcessorTest {
 		processor.addBookingTypes(account.getBookings(), account);
 
 		assertEquals(Typ.REBOOKING_OUT, rebooking.getTyp());
-		assertEquals("Savings", rebooking.getCrossAccountNamePP());
+		assertEquals("Savings", rebooking.getCrossAccountName());
 		assertEquals(Typ.INTEREST, interest.getTyp());
 		assertEquals(Typ.TAX, tax.getTyp());
 		assertEquals(Typ.UNKNOWN, unknownAmount.getTyp());
@@ -74,7 +74,7 @@ class BookingProcessorTest {
 		TestBooking unclassified = booking("4.00", "unclassified");
 		TestBooking transferBooking = booking("5.00", "transfer")
 				.withTyp(Typ.REBOOKING_OUT)
-				.withAccountNamePP("--TRANSFER--");
+				.withAccountName("--TRANSFER--");
 		TestAccount account = new TestAccount("Checking", "Checking")
 				.withBookings(rebooking, unknown, unclassified, transferBooking);
 
@@ -88,18 +88,18 @@ class BookingProcessorTest {
 		TestBooking pairedOut = booking("-100.00", "paired out")
 				.withDate(date)
 				.withTyp(Typ.REBOOKING_OUT)
-				.withAccountNamePP("Checking")
-				.withCrossAccountNamePP("Savings");
+				.withAccountName("Checking")
+				.withCrossAccountName("Savings");
 		TestBooking pairedIn = booking("100.00", "paired in")
 				.withDate(date)
 				.withTyp(Typ.REBOOKING_IN)
-				.withAccountNamePP("Savings")
-				.withCrossAccountNamePP("Checking");
+				.withAccountName("Savings")
+				.withCrossAccountName("Checking");
 		TestBooking missing = booking("-25.00", "missing")
 				.withDate(date)
 				.withTyp(Typ.REBOOKING_OUT)
-				.withAccountNamePP("Checking")
-				.withCrossAccountNamePP("Broker");
+				.withAccountName("Checking")
+				.withCrossAccountName("Broker");
 
 		List<Booking> result = processor.findMissingRebookings(List.of(pairedOut, pairedIn, missing));
 
@@ -112,13 +112,13 @@ class BookingProcessorTest {
 		TestBooking checkingOut = booking("-100.00", "paired out")
 				.withDate(date)
 				.withTyp(Typ.REBOOKING_OUT)
-				.withAccountNamePP("Checking")
-				.withCrossAccountNamePP("Savings");
+				.withAccountName("Checking")
+				.withCrossAccountName("Savings");
 		TestBooking savingsIn = booking("100.00", "paired in")
 				.withDate(date)
 				.withTyp(Typ.REBOOKING_IN)
-				.withAccountNamePP("Savings")
-				.withCrossAccountNamePP("Checking");
+				.withAccountName("Savings")
+				.withCrossAccountName("Checking");
 		TestAccount checking = new TestAccount("Checking", "Checking").withBookings(checkingOut);
 		TestAccount savings = new TestAccount("Savings", "Savings").withBookings(savingsIn);
 

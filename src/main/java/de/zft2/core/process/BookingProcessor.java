@@ -53,9 +53,9 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 
 		for (Booking booking : records) {
 			if (booking.getCrossAccountIBAN() != null) {
-				booking.setCrossAccountNamePP(findAccountNamePP(booking.getCrossAccountIBAN()));
-				if (booking.getCrossAccountNamePP() == null && booking.getCrossAccountIBAN().length() >= 15) {
-					booking.setCrossAccountNamePP(
+				booking.setCrossAccountName(findAccountNamePP(booking.getCrossAccountIBAN()));
+				if (booking.getCrossAccountName() == null && booking.getCrossAccountIBAN().length() >= 15) {
+					booking.setCrossAccountName(
 							findAccountNamePP(booking.getCrossAccountIBAN().substring(12).replaceFirst("^0+(?!$)", "")));
 				}
 			}
@@ -66,7 +66,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	private void determineBookingTyp(Booking booking, Account<B> account) {
 		if (booking.getAmount() == null) {
 			booking.setTyp(Typ.UNKNOWN);
-		} else if (isNotEmpty(booking.getCrossAccountNamePP()) && !isCrossBookingOnSameAccount(account, booking.getCrossAccountIBAN())) {
+		} else if (isNotEmpty(booking.getCrossAccountName()) && !isCrossBookingOnSameAccount(account, booking.getCrossAccountIBAN())) {
 			booking.setTyp(booking.getAmount().compareTo(BigDecimal.ZERO) <= 0 ? Typ.REBOOKING_OUT : Typ.REBOOKING_IN);
 		} else if (matchesBookingType(booking.getPurpose(), propsBookingTypes.getProp("INTEREST").split(";"), false)
 				|| matchesBookingType(booking.getPurpose(), propsBookingTypes.getProp("INTEREST_WHOLE_WORD").split(";"), true)) {
@@ -136,23 +136,23 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	private void generateCrossTransferBooking(A accountTansfer, A account, Collection<A> kontenListToCompare,
 			boolean withTransferAccount, int daysRebooking) {
 		for (Booking booking : account.getBookings()) {
-			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(booking.getCrossAccountNamePP())
-					&& !account.getNamePP().equalsIgnoreCase(booking.getCrossAccountNamePP())
+			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(booking.getCrossAccountName())
+					&& !account.getNamePP().equalsIgnoreCase(booking.getCrossAccountName())
 					&& (booking.getTyp() == Typ.REBOOKING_IN || booking.getTyp() == Typ.REBOOKING_OUT)) {
 
 				Booking crossBookingToTransfer = null;
 				try {
-					Account<B> kontoCmp = getKontoByNamePP(kontenListToCompare, booking.getCrossAccountNamePP());
+					Account<B> kontoCmp = getKontoByNamePP(kontenListToCompare, booking.getCrossAccountName());
 					crossBookingToTransfer = findCrossBooking(kontoCmp, booking, daysRebooking, withTransferAccount);
 				} catch (AccountException ae) {
 					log.error(
 							"Booking (Account: {}) {} / {} / {} has cross reference to Account<Booking> {}, "
 									+ "but this Account<Booking> does not exist in File!",
 							account.getNamePP(), booking.getDate(), booking.getPurpose(), booking.getCrossAccountIBAN(),
-							booking.getCrossAccountNamePP(), ae);
+							booking.getCrossAccountName(), ae);
 					continue;
 				} catch (Exception e) {
-					log.error("Error finding CMP Account: {}!", booking.getCrossAccountNamePP(), e);
+					log.error("Error finding CMP Account: {}!", booking.getCrossAccountName(), e);
 				}
 
 				if (crossBookingToTransfer != null) {
@@ -170,8 +170,8 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		for (Booking bookingCmp : kontoCmp.getBookings()) {
 			if (isCorrespondingRebooking(baseBooking.getTyp(), bookingCmp.getTyp())
 					&& compareCorrespondingAmount(baseBooking.getAmount(), bookingCmp.getAmount())
-					&& compareCrossAccount(baseBooking.getCrossAccountNamePP(), bookingCmp)
-					&& compareBaseAccount(baseBooking.getAccountNamePP(), bookingCmp)) {				
+					&& compareCrossAccount(baseBooking.getCrossAccountName(), bookingCmp)
+					&& compareBaseAccount(baseBooking.getAccountName(), bookingCmp)) {
 				int daysBetweenFound = compareTransactionDates(baseBooking.getDate(), bookingCmp.getDate(), bookingCmp.getTyp(), maxTimeBetween);
 
 				if (daysBetweenFound == 0) {
@@ -222,14 +222,14 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		}
 	}
 
-	private boolean compareCrossAccount(String crossAccountNamePP, Booking possibleReBooking) {
-		return possibleReBooking.getAccountNamePP() != null
-				&& possibleReBooking.getAccountNamePP().equals(crossAccountNamePP);
+	private boolean compareCrossAccount(String crossAccountName, Booking possibleReBooking) {
+		return possibleReBooking.getAccountName() != null
+				&& possibleReBooking.getAccountName().equals(crossAccountName);
 	}
 
 	private boolean compareBaseAccount(String baseAccountNamePP, Booking possibleReBooking) {
-		return possibleReBooking.getAccountNamePP() != null
-				&& possibleReBooking.getCrossAccountNamePP().equals(baseAccountNamePP);
+		return possibleReBooking.getAccountName() != null
+				&& possibleReBooking.getCrossAccountName().equals(baseAccountNamePP);
 	}
 
 	private Account<B> getKontoByNamePP(Collection<A> kontenList, String kontoNamePP) throws AccountException {
@@ -281,15 +281,15 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 								+ "corresponding booking: {} / {}/ {} / {} / {} ",
 						account.getNamePP(), bookingCancel.getDate(), bookingCancel.getAmountStr(),
 						bookingCancel.getPurpose(), bookingCancel.getCrossAccountIBAN(),
-						bookingCancel.getCrossAccountNamePP(), bookingOriginal.getDate(),
+						bookingCancel.getCrossAccountName(), bookingOriginal.getDate(),
 						bookingOriginal.getAmountStr(), bookingOriginal.getPurpose(),
 						bookingOriginal.getCrossAccountIBAN(),
-						bookingOriginal.getCrossAccountNamePP());
+						bookingOriginal.getCrossAccountName());
 
 				bookingCancel.setTyp(Typ.UNKNOWN);
-				bookingCancel.setCrossAccountNamePP(null);
+				bookingCancel.setCrossAccountName(null);
 				bookingOriginal.setTyp(Typ.UNKNOWN);
-				bookingOriginal.setCrossAccountNamePP(null);
+				bookingOriginal.setCrossAccountName(null);
 
 				cancellationBookingsCount++;
 
@@ -310,8 +310,8 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	public int countAccountBookings(A account, Typ typ) {
 		int reBookings = 0;
 		for (Booking booking : account.getBookings()) {
-			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(booking.getAccountNamePP())
-					&& !NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(booking.getCrossAccountNamePP())
+			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(booking.getAccountName())
+					&& !NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(booking.getCrossAccountName())
 					&& typ == booking.getTyp()
 					|| (typ == null && (booking.getTyp() == null || booking.getTyp() == Typ.UNKNOWN))) {
 				reBookings++;
@@ -328,7 +328,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 			}
 			for (Booking possibleReBooking : account.getBookings()) {
 				if (isUmbuchung(possibleReBooking.getTyp())
-						&& !NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(possibleReBooking.getCrossAccountNamePP())) {
+						&& !NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(possibleReBooking.getCrossAccountName())) {
 					removeCount = removeBookingsFromCrossAccount(accountList, possibleReBooking, removeCount);
 				}
 			}
@@ -339,10 +339,10 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 
 	private int removeBookingsFromCrossAccount(Collection<A> accountList, Booking possibleReBooking, int removeCount)
 			throws AccountException {
-		Collection<B> crossAccountBookings = getKontoByNamePP(accountList, possibleReBooking.getCrossAccountNamePP()).getBookings();
+		Collection<B> crossAccountBookings = getKontoByNamePP(accountList, possibleReBooking.getCrossAccountName()).getBookings();
 		for (Booking bookingCrossAccount : crossAccountBookings) {
 			if (isCorrespondingRebooking(possibleReBooking.getTyp(), bookingCrossAccount.getTyp())
-					&& compareCrossAccount(bookingCrossAccount.getCrossAccountNamePP(), possibleReBooking)
+					&& compareCrossAccount(bookingCrossAccount.getCrossAccountName(), possibleReBooking)
 					&& possibleReBooking.getDate().equals(bookingCrossAccount.getDate())
 					&& compareCorrespondingAmount(possibleReBooking.getAmount(), bookingCrossAccount.getAmount())) {
 				if (crossAccountBookings.remove(bookingCrossAccount)) {
@@ -371,7 +371,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 
 		for (Booking baseBooking : bookingListWithoutTransfer) {
 			if (!isUmbuchung(baseBooking.getTyp())
-					|| NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(baseBooking.getCrossAccountNamePP())) {
+					|| NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(baseBooking.getCrossAccountName())) {
 				continue;
 			}
 			boolean foundRebooking = false;
@@ -380,7 +380,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 						&& compareTransactionDates(baseBooking.getDate(), possibleReBooking.getDate(),
 								possibleReBooking.getTyp(), 0) == 0
 						&& compareAmount(baseBooking.getAmount(), possibleReBooking.getAmount())
-						&& compareCrossAccount(baseBooking.getCrossAccountNamePP(), possibleReBooking)) {
+						&& compareCrossAccount(baseBooking.getCrossAccountName(), possibleReBooking)) {
 					foundRebooking = true;
 					rebookingsFoundCount++;
 					break;
@@ -402,8 +402,8 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	public List<Booking> findReBookings(Collection<B> bookingListWithoutTransfer) {
 		List<Booking> reBookingsList = new ArrayList<>();
 		for (Booking possibleReBooking : bookingListWithoutTransfer) {
-			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(possibleReBooking.getAccountNamePP())
-					&& !NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(possibleReBooking.getCrossAccountNamePP())
+			if (!NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(possibleReBooking.getAccountName())
+					&& !NAME_ACCOUNT_TRANSFER.equalsIgnoreCase(possibleReBooking.getCrossAccountName())
 					&& isUmbuchung(possibleReBooking.getTyp())) {
 				reBookingsList.add(possibleReBooking);
 			}
@@ -418,11 +418,11 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		for (Booking baseBooking : missingBookings) {
 			log.printf(Level.WARN,
 					"Re-Booking missing for (BaseAccount): %-25s / %8s / %9s / %-160s / %23s / %11s / %25s",
-					baseBooking.getAccountNamePP(), baseBooking.getDate(), baseBooking.getAmountStr(),
+					baseBooking.getAccountName(), baseBooking.getDate(), baseBooking.getAmountStr(),
 					baseBooking.getPurpose().substring(0,
 							baseBooking.getPurpose().length() > 160 ? 160 : baseBooking.getPurpose().length()),
 					baseBooking.getCrossAccountIBAN(), baseBooking.getCrossAccountBIC(),
-					baseBooking.getCrossAccountNamePP());
+					baseBooking.getCrossAccountName());
 		}
 
 	}

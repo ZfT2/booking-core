@@ -8,14 +8,26 @@ import de.zft2.core.dto.Booking;
 public class TestBooking implements Booking {
 
 	private LocalDate date;
+	private LocalDate dateBooking;
+	private LocalDate dateValue;
 	private BigDecimal amount;
 	private String amountStr;
 	private String purpose = "";
 	private Typ typ;
-	private String accountNamePP;
+	private String accountName;
 	private String crossAccountIBAN;
 	private String crossAccountBIC;
-	private String crossAccountNamePP;
+	private String crossAccountName;
+	private String crossReceiverName;
+	private String crossBankName;
+	private String crossAccountNumber;
+	private String crossBlz;
+	private String sepaCustomerRef;
+	private String sepaCreditorId;
+	private String sepaEndToEnd;
+	private String sepaMandate;
+	private String sepaPersonId;
+	private String sepaPurpose;
 	private Booking crossBooking;
 
 	public TestBooking withDate(LocalDate date) {
@@ -39,8 +51,8 @@ public class TestBooking implements Booking {
 		return this;
 	}
 
-	public TestBooking withAccountNamePP(String accountNamePP) {
-		this.accountNamePP = accountNamePP;
+	public TestBooking withAccountName(String accountName) {
+		this.accountName = accountName;
 		return this;
 	}
 
@@ -54,14 +66,24 @@ public class TestBooking implements Booking {
 		return this;
 	}
 
-	public TestBooking withCrossAccountNamePP(String crossAccountNamePP) {
-		this.crossAccountNamePP = crossAccountNamePP;
+	public TestBooking withCrossAccountName(String crossAccountName) {
+		this.crossAccountName = crossAccountName;
 		return this;
 	}
 
 	@Override
 	public LocalDate getDate() {
 		return date;
+	}
+
+	@Override
+	public LocalDate getDateBooking() {
+		return dateBooking;
+	}
+
+	@Override
+	public LocalDate getDateValue() {
+		return dateValue;
 	}
 
 	@Override
@@ -80,13 +102,18 @@ public class TestBooking implements Booking {
 	}
 
 	@Override
+	public Booking getCrossBooking() {
+		return crossBooking;
+	}
+
+	@Override
 	public Typ getTyp() {
 		return typ;
 	}
 
 	@Override
-	public String getAccountNamePP() {
-		return accountNamePP;
+	public String getAccountName() {
+		return accountName;
 	}
 
 	@Override
@@ -100,8 +127,73 @@ public class TestBooking implements Booking {
 	}
 
 	@Override
-	public String getCrossAccountNamePP() {
-		return crossAccountNamePP;
+	public String getCrossAccountName() {
+		return crossAccountName;
+	}
+
+	@Override
+	public String getCrossReceiverName() {
+		return crossReceiverName;
+	}
+
+	@Override
+	public String getCrossBankName() {
+		return crossBankName;
+	}
+
+	@Override
+	public String getCrossAccountNumber() {
+		return crossAccountNumber;
+	}
+
+	@Override
+	public String getCrossBlz() {
+		return crossBlz;
+	}
+
+	@Override
+	public String getSepaCustomerRef() {
+		return sepaCustomerRef;
+	}
+
+	@Override
+	public String getSepaCreditorId() {
+		return sepaCreditorId;
+	}
+
+	@Override
+	public String getSepaEndToEnd() {
+		return sepaEndToEnd;
+	}
+
+	@Override
+	public String getSepaMandate() {
+		return sepaMandate;
+	}
+
+	@Override
+	public String getSepaPersonId() {
+		return sepaPersonId;
+	}
+
+	@Override
+	public String getSepaPurpose() {
+		return sepaPurpose;
+	}
+
+	@Override
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
+
+	@Override
+	public void setDateBooking(LocalDate dateBooking) {
+		this.dateBooking = dateBooking;
+	}
+
+	@Override
+	public void setDateValue(LocalDate dateValue) {
+		this.dateValue = dateValue;
 	}
 
 	@Override
@@ -116,6 +208,16 @@ public class TestBooking implements Booking {
 	}
 
 	@Override
+	public void setPurpose(String purpose) {
+		this.purpose = purpose;
+	}
+
+	@Override
+	public void setAccountName(String accountName) {
+		this.accountName = accountName;
+	}
+
+	@Override
 	public void setCrossAccountIBAN(String crossAccountIBAN) {
 		this.crossAccountIBAN = crossAccountIBAN;
 	}
@@ -126,8 +228,8 @@ public class TestBooking implements Booking {
 	}
 
 	@Override
-	public void setCrossAccountNamePP(String accountNamePP) {
-		this.crossAccountNamePP = accountNamePP;
+	public void setCrossAccountName(String accountName) {
+		this.crossAccountName = accountName;
 	}
 
 	@Override
@@ -135,7 +237,53 @@ public class TestBooking implements Booking {
 		this.crossBooking = crossBookingToTransfer;
 	}
 
-	public Booking getCrossBooking() {
-		return crossBooking;
+	@Override
+	public void setCrossReceiverName(String crossReceiverName) {
+		this.crossReceiverName = crossReceiverName;
+	}
+
+	@Override
+	public void setCrossBankName(String crossBankName) {
+		this.crossBankName = crossBankName;
+	}
+
+	@Override
+	public void setCrossAccountNumber(String crossAccountNumber) {
+		this.crossAccountNumber = crossAccountNumber;
+	}
+
+	@Override
+	public void setCrossBlz(String crossBlz) {
+		this.crossBlz = crossBlz;
+	}
+
+	@Override
+	public void setSepaCustomerRef(String sepaCustomerRef) {
+		this.sepaCustomerRef = sepaCustomerRef;
+	}
+
+	@Override
+	public void setSepaCreditorId(String sepaCreditorId) {
+		this.sepaCreditorId = sepaCreditorId;
+	}
+
+	@Override
+	public void setSepaEndToEnd(String sepaEndToEnd) {
+		this.sepaEndToEnd = sepaEndToEnd;
+	}
+
+	@Override
+	public void setSepaMandate(String sepaMandate) {
+		this.sepaMandate = sepaMandate;
+	}
+
+	@Override
+	public void setSepaPersonId(String sepaPersonId) {
+		this.sepaPersonId = sepaPersonId;
+	}
+
+	@Override
+	public void setSepaPurpose(String sepaPurpose) {
+		this.sepaPurpose = sepaPurpose;
 	}
 }

@@ -35,10 +35,10 @@ class BookingTest {
 		assertEquals(List.of(first, second, third, fourth), bookings);
 	}
 
-	private static TestBooking booking(String crossAccountNamePP, String accountNamePP, LocalDate date) {
+	private static TestBooking booking(String crossAccountName, String accountName, LocalDate date) {
 		return new TestBooking()
-				.withCrossAccountNamePP(crossAccountNamePP)
-				.withAccountNamePP(accountNamePP)
+				.withCrossAccountName(crossAccountName)
+				.withAccountName(accountName)
 				.withDate(date);
 	}
 }
