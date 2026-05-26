@@ -2,6 +2,7 @@ package de.zft2.core.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public interface Booking {
 
@@ -18,7 +19,7 @@ public interface Booking {
 
 		public static Typ forString(String strValue) {
 			for (Typ x : values()) {
-				if (x.translation.equals(strValue))
+				if (Objects.equals(x.translation, strValue))
 					return x;
 			}
 			return null;

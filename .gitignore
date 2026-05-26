@@ -32,3 +32,4 @@ logs/
 
 #Files in Folders
 src/test/properties/intern/*.properties
+src/test/properties/import/intern/*.properties
