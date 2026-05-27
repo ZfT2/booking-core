@@ -35,11 +35,11 @@ public class AccountProcessor<A extends Account<? extends Booking>> {
 
 	private static void initProperties() throws ConfigurationException {
 		if (propsTransfer == null)
-			propsTransfer = ImportProperties.getInstance("transfer.properties", true);
+			propsTransfer = ImportProperties.getInstance("accountTransfer.properties", true);
 		if (propsAccount == null)
 			propsAccount = ImportProperties.getInstance("account.properties", true);
 		if (propsSkip == null)
-			propsSkip = ImportProperties.getInstance("skip.properties", false);
+			propsSkip = ImportProperties.getInstance("accountSkip.properties", false);
 	}
 	
 	private void setAccountNumbersMap() {

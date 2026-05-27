@@ -127,6 +127,22 @@ class BookingProcessorTest {
 		assertSame(savingsIn, checkingOut.getCrossBooking());
 	}
 
+	@Test
+	void revertCancellationRebookingsAppliesDefaultCancelPatternsToAllAccounts() {
+		LocalDate date = LocalDate.of(2026, 5, 20);
+		TestBooking original = booking("-12.00", "Invoice 42")
+				.withDate(date);
+		TestBooking cancellation = booking("12.00", "Cancel Invoice 42")
+				.withDate(date.plusDays(1));
+		TestAccount account = new TestAccount("Other Account", "Other Account")
+				.withBookings(original, cancellation);
+
+		processor.revertCancellationRebookings(List.of(account));
+
+		assertEquals(Typ.CANCEL, original.getTyp());
+		assertEquals(Typ.CANCEL, cancellation.getTyp());
+	}
+
 	private static TestBooking booking(String amount, String purpose) {
 		return new TestBooking()
 				.withDate(LocalDate.of(2026, 5, 20))

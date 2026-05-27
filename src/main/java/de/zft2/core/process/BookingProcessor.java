@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	private static Logger log = LogManager.getLogger(BookingProcessor.class);
 
 	private static final String NAME_ACCOUNT_TRANSFER = "--TRANSFER--";
+	private static final String DEFAULT_CANCEL_PATTERNS = "DEFAULT";
 
 	private static ImportProperties propsBookingTypes;
 	private static ImportProperties propsCancel;
@@ -40,7 +42,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	private static void init() throws ConfigurationException {
 		if (propsBookingTypes == null && propsCancel == null) {
 			propsBookingTypes = ImportProperties.getInstance("bookings.properties", false);
-			propsCancel = ImportProperties.getInstance("cancel.properties", true);
+			propsCancel = ImportProperties.getInstance("accountCancel.properties", true);
 		}
 	}
 
@@ -260,7 +262,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 
 		int cancellationBookingsCount = 0;
 		for (Account<B> account : accountList) {
-			String[] cancelPatterns = cancelBookingsMap.get(account.getNamePP());
+			String[] cancelPatterns = withDefaultCancelPatterns(cancelBookingsMap.get(account.getNamePP()), cancelBookingsMap.get(DEFAULT_CANCEL_PATTERNS));
 			if (cancelPatterns == null) {
 				continue;
 			}
@@ -276,6 +278,18 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 			}
 		}
 		log.warn("Found Cancellation Bookings: {}\n", cancellationBookingsCount);
+	}
+
+	private String[] withDefaultCancelPatterns(String[] cancelPatterns, String[] defaultCancelPatterns) {
+		if (defaultCancelPatterns == null || defaultCancelPatterns.length == 0) {
+			return cancelPatterns;
+		}
+		if (cancelPatterns == null || cancelPatterns.length == 0) {
+			return defaultCancelPatterns;
+		}
+		String[] mergedPatterns = Arrays.copyOf(cancelPatterns, cancelPatterns.length + defaultCancelPatterns.length);
+		System.arraycopy(defaultCancelPatterns, 0, mergedPatterns, cancelPatterns.length, defaultCancelPatterns.length);
+		return mergedPatterns;
 	}
 
 	private int searchAccountforCancelBooking(Account<B> account, Booking bookingCancel, String purposeToSearch, int cancellationBookingsCount) {
