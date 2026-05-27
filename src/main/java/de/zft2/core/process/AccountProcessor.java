@@ -112,6 +112,9 @@ public class AccountProcessor<A extends Account<? extends Booking>> {
 	}
 
 	public boolean isCrossBookingOnSameAccount(Account<?> account, String crossIdentifier) {
+		if (crossIdentifier == null) {
+			return false;
+		}
 
 		if (accountNumbersMap.get(account.getNamePP()) != null && accountNumbersMap.get(account.getNamePP()).contains(crossIdentifier)) {
 			return true;

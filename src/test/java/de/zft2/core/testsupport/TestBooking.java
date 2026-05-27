@@ -4,8 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import de.zft2.core.dto.Booking;
+import de.zft2.core.dto.BookingDetails;
+import de.zft2.core.dto.Counterpart;
+import de.zft2.core.dto.DefaultCounterpart;
 
-public class TestBooking implements Booking {
+public class TestBooking implements BookingDetails {
 
 	private LocalDate date;
 	private LocalDate dateBooking;
@@ -117,11 +120,24 @@ public class TestBooking implements Booking {
 	}
 
 	@Override
+	public Counterpart getCounterpart() {
+		return DefaultCounterpart.ofNullable(crossReceiverName, crossAccountIBAN, crossAccountBIC, crossAccountNumber, crossBlz, crossBankName);
+	}
+
+	@Override
+	public void setCounterpart(Counterpart counterpart) {
+		crossReceiverName = counterpart != null ? counterpart.getName() : null;
+		crossAccountIBAN = counterpart != null ? counterpart.getIban() : null;
+		crossAccountBIC = counterpart != null ? counterpart.getBic() : null;
+		crossAccountNumber = counterpart != null ? counterpart.getAccountNumber() : null;
+		crossBlz = counterpart != null ? counterpart.getBlz() : null;
+		crossBankName = counterpart != null ? counterpart.getBankName() : null;
+	}
+
 	public String getCrossAccountIBAN() {
 		return crossAccountIBAN;
 	}
 
-	@Override
 	public String getCrossAccountBIC() {
 		return crossAccountBIC;
 	}
@@ -131,22 +147,18 @@ public class TestBooking implements Booking {
 		return crossAccountName;
 	}
 
-	@Override
 	public String getCrossReceiverName() {
 		return crossReceiverName;
 	}
 
-	@Override
 	public String getCrossBankName() {
 		return crossBankName;
 	}
 
-	@Override
 	public String getCrossAccountNumber() {
 		return crossAccountNumber;
 	}
 
-	@Override
 	public String getCrossBlz() {
 		return crossBlz;
 	}
@@ -217,12 +229,10 @@ public class TestBooking implements Booking {
 		this.accountName = accountName;
 	}
 
-	@Override
 	public void setCrossAccountIBAN(String crossAccountIBAN) {
 		this.crossAccountIBAN = crossAccountIBAN;
 	}
 
-	@Override
 	public void setCrossAccountBIC(String crossAccountBIC) {
 		this.crossAccountBIC = crossAccountBIC;
 	}
@@ -237,22 +247,18 @@ public class TestBooking implements Booking {
 		this.crossBooking = crossBookingToTransfer;
 	}
 
-	@Override
 	public void setCrossReceiverName(String crossReceiverName) {
 		this.crossReceiverName = crossReceiverName;
 	}
 
-	@Override
 	public void setCrossBankName(String crossBankName) {
 		this.crossBankName = crossBankName;
 	}
 
-	@Override
 	public void setCrossAccountNumber(String crossAccountNumber) {
 		this.crossAccountNumber = crossAccountNumber;
 	}
 
-	@Override
 	public void setCrossBlz(String crossBlz) {
 		this.crossBlz = crossBlz;
 	}

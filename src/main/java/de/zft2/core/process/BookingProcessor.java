@@ -19,6 +19,7 @@ import de.zft2.core.config.ImportProperties;
 import de.zft2.core.dto.Account;
 import de.zft2.core.dto.Booking;
 import de.zft2.core.dto.Booking.Typ;
+import de.zft2.core.dto.Counterpart;
 import de.zft2.core.exception.AccountException;
 import de.zft2.core.exception.ConfigurationException;
 
@@ -52,11 +53,12 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	public void addBookingTypes(Collection<B> records, Account<B> account) {
 
 		for (Booking booking : records) {
-			if (booking.getCrossAccountIBAN() != null) {
-				booking.setCrossAccountName(findAccountNamePP(booking.getCrossAccountIBAN()));
-				if (booking.getCrossAccountName() == null && booking.getCrossAccountIBAN().length() >= 15) {
+			String counterpartIban = getCounterpartIban(booking);
+			if (counterpartIban != null) {
+				booking.setCrossAccountName(findAccountNamePP(counterpartIban));
+				if (booking.getCrossAccountName() == null && counterpartIban.length() >= 15) {
 					booking.setCrossAccountName(
-							findAccountNamePP(booking.getCrossAccountIBAN().substring(12).replaceFirst("^0+(?!$)", "")));
+							findAccountNamePP(counterpartIban.substring(12).replaceFirst("^0+(?!$)", "")));
 				}
 			}
 			determineBookingTyp(booking, account);
@@ -64,9 +66,10 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	}
 
 	private void determineBookingTyp(Booking booking, Account<B> account) {
+		String counterpartIban = getCounterpartIban(booking);
 		if (booking.getAmount() == null) {
 			booking.setTyp(Typ.UNKNOWN);
-		} else if (isNotEmpty(booking.getCrossAccountName()) && !isCrossBookingOnSameAccount(account, booking.getCrossAccountIBAN())) {
+		} else if (isNotEmpty(booking.getCrossAccountName()) && !isCrossBookingOnSameAccount(account, counterpartIban)) {
 			booking.setTyp(booking.getAmount().compareTo(BigDecimal.ZERO) <= 0 ? Typ.REBOOKING_OUT : Typ.REBOOKING_IN);
 		} else if (matchesBookingType(booking.getPurpose(), propsBookingTypes.getProp("INTEREST").split(";"), false)
 				|| matchesBookingType(booking.getPurpose(), propsBookingTypes.getProp("INTEREST_WHOLE_WORD").split(";"), true)) {
@@ -148,7 +151,7 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 					log.error(
 							"Booking (Account: {}) {} / {} / {} has cross reference to Account<Booking> {}, "
 									+ "but this Account<Booking> does not exist in File!",
-							account.getNamePP(), booking.getDate(), booking.getPurpose(), booking.getCrossAccountIBAN(),
+							account.getNamePP(), booking.getDate(), booking.getPurpose(), getCounterpartIban(booking),
 							booking.getCrossAccountName(), ae);
 					continue;
 				} catch (Exception e) {
@@ -162,7 +165,9 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 		}
 	}
 
-	protected abstract void generateAndLinkCrossBookingsOnTransferAccount(Account<B> accountTansfer, Booking booking, Booking crossBookingToTransfer);
+	protected void generateAndLinkCrossBookingsOnTransferAccount(Account<B> accountTansfer, Booking booking, Booking crossBookingToTransfer) {
+		throw new UnsupportedOperationException("Transfer account booking generation is not supported by this booking processor.");
+	}
 	
 	private Booking findCrossBooking(Account<B> kontoCmp, Booking baseBooking, int maxTimeBetween, boolean withTransferAccount) {
 		Booking rebookingCandidate = null;
@@ -280,10 +285,10 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 				log.warn("Cancellation-Booking to revert found: (Account: {} ) {} / {} / {} / {} / {} \n,"
 								+ "corresponding booking: {} / {}/ {} / {} / {} ",
 						account.getNamePP(), bookingCancel.getDate(), bookingCancel.getAmountStr(),
-						bookingCancel.getPurpose(), bookingCancel.getCrossAccountIBAN(),
+						bookingCancel.getPurpose(), getCounterpartIban(bookingCancel),
 						bookingCancel.getCrossAccountName(), bookingOriginal.getDate(),
 						bookingOriginal.getAmountStr(), bookingOriginal.getPurpose(),
-						bookingOriginal.getCrossAccountIBAN(),
+						getCounterpartIban(bookingOriginal),
 						bookingOriginal.getCrossAccountName());
 
 				bookingCancel.setTyp(Typ.UNKNOWN);
@@ -421,9 +426,17 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 					baseBooking.getAccountName(), baseBooking.getDate(), baseBooking.getAmountStr(),
 					baseBooking.getPurpose().substring(0,
 							baseBooking.getPurpose().length() > 160 ? 160 : baseBooking.getPurpose().length()),
-					baseBooking.getCrossAccountIBAN(), baseBooking.getCrossAccountBIC(),
+					getCounterpartIban(baseBooking), getCounterpartBic(baseBooking),
 					baseBooking.getCrossAccountName());
 		}
 
+	}
+
+	private String getCounterpartIban(Booking booking) {
+		return Counterpart.ibanOf(booking.getCounterpart());
+	}
+
+	private String getCounterpartBic(Booking booking) {
+		return Counterpart.bicOf(booking.getCounterpart());
 	}
 }
