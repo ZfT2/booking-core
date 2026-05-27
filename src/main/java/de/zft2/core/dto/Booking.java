@@ -15,6 +15,7 @@ public interface Booking {
 		TAX("Steuern"),
 		TAX_REFUND("Steuerrückerstattung"),
 		DIVIDENDS("Dividende"),
+		CANCEL("Storno"),
 		UNKNOWN(null);
 
 		public static Typ forString(String strValue) {

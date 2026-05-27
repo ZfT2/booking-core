@@ -67,6 +67,8 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 
 	private void determineBookingTyp(Booking booking, Account<B> account) {
 		String counterpartIban = getCounterpartIban(booking);
+		if (booking.getTyp() == Typ.CANCEL)
+			return;
 		if (booking.getAmount() == null) {
 			booking.setTyp(Typ.UNKNOWN);
 		} else if (isNotEmpty(booking.getCrossAccountName()) && !isCrossBookingOnSameAccount(account, counterpartIban)) {
@@ -100,13 +102,12 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 	
 	public Collection<A> generateCrossBookings(Collection<A> accountList, int daysRebooking, A accountTansfer) {
 		
-		if (setupTransferProperties(accountList)) {
-			for (Account<B> account : accountList) {
-				if (account.getNamePP() == null) {
-					account.setNamePP(account.getAccountName());
-				}
-				addBookingTypes(account.getBookings(), account);
+		setupTransferProperties(accountList);
+		for (Account<B> account : accountList) {
+			if (account.getNamePP() == null) {
+				account.setNamePP(account.getAccountName());
 			}
+			addBookingTypes(account.getBookings(), account);
 		}
 
 		if (accountTansfer != null) {
@@ -291,9 +292,9 @@ public abstract class BookingProcessor<B extends Booking, A extends Account<B>> 
 						getCounterpartIban(bookingOriginal),
 						bookingOriginal.getCrossAccountName());
 
-				bookingCancel.setTyp(Typ.UNKNOWN);
+				bookingCancel.setTyp(Typ.CANCEL);
 				bookingCancel.setCrossAccountName(null);
-				bookingOriginal.setTyp(Typ.UNKNOWN);
+				bookingOriginal.setTyp(Typ.CANCEL);
 				bookingOriginal.setCrossAccountName(null);
 
 				cancellationBookingsCount++;
